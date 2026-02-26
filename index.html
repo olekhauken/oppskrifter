@@ -198,7 +198,7 @@
     <img id="preview-img" alt="Forhåndsvisning">
     <div class="loading" id="ai-loading"><div class="spinner"></div><p>Leser oppskrift...</p></div>
     <div class="ai-result" id="ai-result">
-      <h3>Funnet oppskrift</h3>
+      <h3>Funnet oppskrift: <span id="ai-recipe-title" style="color:var(--text);font-style:italic;"></span></h3>
       <pre id="ai-text"></pre>
       <button class="btn-primary" style="margin:16px 0 0;width:100%;" onclick="importAiRecipe()">Importer som oppskrift</button>
     </div>
@@ -624,8 +624,9 @@ async function analyzeImage() {
     const text = data.content?.[0]?.text||'';
     try {
       parsedAiRecipe = JSON.parse(text.trim());
-      document.getElementById('ai-text').textContent = `✓ Funnet: ${parsedAiRecipe.name}\n${parsedAiRecipe.ingredients?.length||0} ingredienser\n${parsedAiRecipe.steps?.length||0} steg`;
-    } catch { parsedAiRecipe=null; document.getElementById('ai-text').textContent=text; }
+      document.getElementById('ai-recipe-title').textContent = parsedAiRecipe.name;
+      document.getElementById('ai-text').textContent = `${parsedAiRecipe.ingredients?.length||0} ingredienser · ${parsedAiRecipe.steps?.length||0} steg`;
+    } catch { parsedAiRecipe=null; document.getElementById('ai-recipe-title').textContent=''; document.getElementById('ai-text').textContent=text; }
     document.getElementById('ai-result').style.display = 'block';
   } catch(e) { showToast('Noe gikk galt: '+e.message); }
   document.getElementById('ai-loading').style.display = 'none';
@@ -662,8 +663,9 @@ window.analyzeUrl = async function() {
     try {
       const m = rt.match(/\{[\s\S]*\}/);
       parsedAiRecipe = JSON.parse(m?m[0]:rt.trim());
-      document.getElementById('ai-text').textContent = `✓ Funnet: ${parsedAiRecipe.name}\n${parsedAiRecipe.ingredients?.length||0} ingredienser\n${parsedAiRecipe.steps?.length||0} steg`;
-    } catch { parsedAiRecipe=null; document.getElementById('ai-text').textContent=rt; }
+      document.getElementById('ai-recipe-title').textContent = parsedAiRecipe.name;
+      document.getElementById('ai-text').textContent = `${parsedAiRecipe.ingredients?.length||0} ingredienser · ${parsedAiRecipe.steps?.length||0} steg`;
+    } catch { parsedAiRecipe=null; document.getElementById('ai-recipe-title').textContent=''; document.getElementById('ai-text').textContent=rt; }
     document.getElementById('ai-result').style.display='block';
   } catch(e) { showToast('Noe gikk galt: '+e.message); }
   document.getElementById('ai-loading').style.display = 'none';
