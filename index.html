@@ -679,10 +679,11 @@ window.analyzeUrl = async function() {
     const res = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-opus-4-5',max_tokens:2000,messages:[{role:'user',content:`Ekstraher oppskriften fra denne teksten og returner KUN ren JSON (ingen markdown, ingen forklaring, ingen backticks):\n{"name":"","category":"Middag","portions":4,"time":30,"ingredients":[{"amount":"2","unit":"dl","name":"mel"}],"steps":["Steg 1..."],"notes":""}\nKategori: Frokost, Lunsj, Middag, Dessert, Bakst, Snacks, Drikke, Annet.\nHvis ingredienser ikke er listet opp, utled dem fra fremgangsmåten.\n\nTekst:\n${text}`}]})
+      body:JSON.stringify({model:'claude-opus-4-5',max_tokens:2000,messages:[{role:'user',content:`Du er en ekspert på norske oppskrifter. Ekstraher eller rekonstruer oppskriften fra denne teksten og returner KUN ren JSON (ingen markdown, ingen forklaring, ingen backticks). Selv om ingredienslisten mangler, SKAL du alltid fylle inn ingredienser basert på oppskriftsnavnet og fremgangsmåten - gjett mengder hvis nødvendig.\n{"name":"","category":"Middag","portions":4,"time":30,"ingredients":[{"amount":"2","unit":"dl","name":"mel"}],"steps":["Steg 1..."],"notes":""}\nKategori: Frokost, Lunsj, Middag, Dessert, Bakst, Snacks, Drikke, Annet.\n\nTekst:\n${text}`}]})
     });
     const data = await res.json();
     const rt = data.content?.[0]?.text||'';
+    console.log('AI response:', rt);
     try {
       const m = rt.match(/\{[\s\S]*\}/);
       parsedAiRecipe = JSON.parse(m?m[0]:rt.trim());
