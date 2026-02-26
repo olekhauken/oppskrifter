@@ -657,13 +657,18 @@ window.analyzeUrl = async function() {
   document.getElementById('preview-img').style.display = 'none';
   try {
     let html = '';
+    const fetchWithTimeout = (p, ms=8000) => Promise.race([p, new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]);
     const proxies = [
-      () => fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`).then(r=>r.ok?r.text():Promise.reject()),
-      () => fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`).then(r=>r.json()).then(d=>d.contents||Promise.reject()),
-      () => fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`).then(r=>r.ok?r.text():Promise.reject()),
+      () => fetchWithTimeout(fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`).then(r=>r.ok?r.text():Promise.reject(new Error('not ok')))),
+      () => fetchWithTimeout(fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`).then(r=>r.json()).then(d=>{ if(!d.contents) throw new Error('empty'); return d.contents; })),
+      () => fetchWithTimeout(fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`).then(r=>r.ok?r.text():Promise.reject(new Error('not ok')))),
     ];
-    for (const tryP of proxies) { try { html=await tryP(); if(html) break; } catch{continue;} }
-    if (!html) throw new Error('Kunne ikke hente siden. Prøv bilde-funksjonen i stedet.');
+    let lastError = '';
+    for (const tryP of proxies) {
+      try { html=await tryP(); if(html) break; }
+      catch(e) { lastError=e.message; continue; }
+    }
+    if (!html) throw new Error('Kunne ikke hente siden (' + lastError + '). Prøv bilde-funksjonen i stedet.');
     const tmp = document.createElement('div'); tmp.innerHTML = html;
     tmp.querySelectorAll('script,style,nav,footer,header,aside').forEach(el=>el.remove());
     const text = (tmp.innerText||tmp.textContent||'').replace(/\s+/g,' ').trim().slice(0,6000);
