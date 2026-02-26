@@ -41,15 +41,15 @@
   .categories::-webkit-scrollbar { display: none; }
   .cat-pill { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 13px; font-family: 'DM Sans', sans-serif; white-space: nowrap; cursor: pointer; transition: all 0.2s; }
   .cat-pill.active { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 500; }
-  .recipe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px; }
-  .recipe-card { background: var(--card); border-radius: var(--radius); overflow: hidden; cursor: pointer; border: 1px solid var(--border); transition: transform 0.15s; }
+  .recipe-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 0 20px; }
+  .recipe-card { background: var(--card); border-radius: 12px; overflow: hidden; cursor: pointer; border: 1px solid var(--border); transition: transform 0.15s; }
   .recipe-card:active { transform: scale(0.97); }
-  .recipe-card .card-img { width: 100%; aspect-ratio: 1; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 40px; overflow: hidden; }
+  .recipe-card .card-img { width: 100%; aspect-ratio: 1; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 28px; overflow: hidden; }
   .recipe-card .card-img img { width: 100%; height: 100%; object-fit: cover; }
-  .recipe-card .card-body { padding: 10px 12px 12px; }
-  .recipe-card .card-title { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--text); line-height: 1.3; }
-  .recipe-card .card-meta { font-size: 12px; color: var(--text2); margin-top: 4px; }
-  .recipe-card .card-cat { display: inline-block; font-size: 11px; background: var(--bg3); color: var(--accent); padding: 2px 8px; border-radius: 10px; margin-top: 6px; }
+  .recipe-card .card-body { padding: 7px 8px 9px; }
+  .recipe-card .card-title { font-family: 'Playfair Display', serif; font-size: 12px; color: var(--text); line-height: 1.3; }
+  .recipe-card .card-meta { font-size: 10px; color: var(--text2); margin-top: 3px; }
+  .recipe-card .card-cat { display: inline-block; font-size: 10px; background: var(--bg3); color: var(--accent); padding: 1px 6px; border-radius: 8px; margin-top: 4px; }
   .empty-state { text-align: center; padding: 60px 40px; color: var(--text2); }
   .empty-state .icon { font-size: 60px; margin-bottom: 16px; }
   .empty-state h3 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--text); margin-bottom: 8px; }
