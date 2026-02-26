@@ -168,7 +168,10 @@
 <div class="view" id="view-camera">
   <div class="header"><h1>Scan oppskrift</h1><p>Ta bilde eller last opp</p></div>
   <div class="ai-view">
-    <div class="api-key-section" id="api-key-section">
+    <div style="text-align:right;margin-bottom:8px;">
+      <button onclick="toggleApiSection()" style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">⚙️ Avansert</button>
+    </div>
+    <div class="api-key-section" id="api-key-section" style="display:none;">
       <p>For å lese oppskrifter fra bilde trenger du en <strong>Anthropic API-nøkkel</strong>.<br>
       Gå til <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys → Create Key</p>
       <div class="form-group" style="padding:0;margin-top:8px;"><input type="password" id="api-key-input" placeholder="sk-ant-..."></div>
@@ -395,7 +398,7 @@ window.showView = function(name) {
   document.getElementById('fab-btn').style.display = name === 'home' ? 'flex' : 'none';
   if (name === 'home') renderGrid();
   if (name === 'settings') {
-    document.getElementById('settings-api-key').value = localStorage.getItem('anthropic_key') || '';
+    document.getElementById('settings-api-key').value = getApiKey() || '';
     document.getElementById('total-count').textContent = recipes.length;
   }
 };
@@ -582,6 +585,18 @@ window.closeDetail = function() {
   document.getElementById('detail-sheet').classList.remove('active');
 };
 
+// Legg inn din delte nøkkel her så alle kan bruke AI-scanning:
+const SHARED_API_KEY = '';
+
+function getApiKey() {
+  return getApiKey() || SHARED_API_KEY;
+}
+
+window.toggleApiSection = function() {
+  const sec = document.getElementById('api-key-section');
+  sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+};
+
 window.saveApiKey = function() {
   const key = document.getElementById('api-key-input').value.trim();
   if (!key) return;
@@ -607,7 +622,7 @@ window.handleImage = function(input) {
 };
 
 async function analyzeImage() {
-  const key = localStorage.getItem('anthropic_key');
+  const key = getApiKey();
   if (!key) { showToast('Legg inn API-nøkkel først!'); return; }
   document.getElementById('ai-loading').style.display = 'block';
   document.getElementById('ai-result').style.display = 'none';
@@ -633,7 +648,7 @@ async function analyzeImage() {
 }
 
 window.analyzeUrl = async function() {
-  const key = localStorage.getItem('anthropic_key');
+  const key = getApiKey();
   if (!key) { showToast('Legg inn API-nøkkel først!'); return; }
   const url = document.getElementById('url-input').value.trim();
   if (!url) { showToast('Lim inn en URL først!'); return; }
@@ -715,8 +730,8 @@ function showToast(msg) {
 window.showToast = showToast;
 
 window.addEventListener('DOMContentLoaded', () => {
-  const key = localStorage.getItem('anthropic_key');
-  if (key) document.getElementById('api-key-section').innerHTML = '<p style="color:var(--success)">✓ API-nøkkel er lagret. Klar til å skanne!</p>';
+  const settingsKey = document.getElementById('settings-api-key');
+  if (settingsKey) settingsKey.value = localStorage.getItem('anthropic_key') || '';
 });
 
 const mBlob = new Blob([JSON.stringify({name:'Oppskrifter',short_name:'Oppskrifter',start_url:'/',display:'standalone',background_color:'#1a1a0e',theme_color:'#1a1a0e',icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a1a0e"/><text y=".9em" font-size="80" x="10">🍽️</text></svg>',sizes:'any',type:'image/svg+xml'}]})],{type:'application/json'});
