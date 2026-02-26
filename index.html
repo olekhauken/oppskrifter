@@ -589,7 +589,7 @@ window.closeDetail = function() {
 const SHARED_API_KEY = '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';
 
 function getApiKey() {
-  return getApiKey() || SHARED_API_KEY;
+  return localStorage.getItem('anthropic_key') || SHARED_API_KEY;
 }
 
 window.toggleApiSection = function() {
