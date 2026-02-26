@@ -775,11 +775,17 @@ async function analyzeUrl() {
   document.getElementById('preview-img').style.display = 'none';
 
   try {
-    // Use allorigins proxy to fetch page content (bypasses CORS)
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-    const proxyRes = await fetch(proxyUrl);
-    const proxyData = await proxyRes.json();
-    const html = proxyData.contents || '';
+    // Try multiple proxies in sequence to bypass CORS
+    let html = '';
+    const proxies = [
+      () => fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`).then(r => r.ok ? r.text() : Promise.reject()),
+      () => fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`).then(r => r.json()).then(d => d.contents || Promise.reject()),
+      () => fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`).then(r => r.ok ? r.text() : Promise.reject()),
+    ];
+    for (const tryProxy of proxies) {
+      try { html = await tryProxy(); if (html) break; } catch { continue; }
+    }
+    if (!html) throw new Error('Kunne ikke hente siden. Noen nettsider blokkerer dette. Prøv bilde-funksjonen i stedet.');
 
     // Strip HTML tags to get readable text
     const tmp = document.createElement('div');
