@@ -648,9 +648,12 @@ async function analyzeImage() {
 }
 
 window.analyzeUrl = async function() {
+  console.log('analyzeUrl called');
   const key = getApiKey();
+  console.log('key:', key ? 'found' : 'missing');
   if (!key) { showToast('Legg inn API-nøkkel først!'); return; }
   const url = document.getElementById('url-input').value.trim();
+  console.log('url:', url);
   if (!url) { showToast('Lim inn en URL først!'); return; }
   document.getElementById('ai-loading').style.display = 'block';
   document.getElementById('ai-result').style.display = 'none';
