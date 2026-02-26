@@ -296,8 +296,10 @@
 
 <div class="overlay" id="detail-overlay" onclick="closeDetail()"></div>
 <div class="sheet" id="detail-sheet">
-  <div class="sheet-handle"></div>
-  <div id="detail-hero" class="detail-hero">🍽️</div>
+  <div style="position:relative;">
+    <button onclick="closeDetail()" style="position:absolute;top:12px;left:12px;z-index:10;background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:36px;height:36px;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);">‹</button>
+    <div id="detail-hero" class="detail-hero">🍽️</div>
+  </div>
   <div class="detail-content">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
       <div class="detail-title" id="d-title"></div>
