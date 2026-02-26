@@ -586,7 +586,7 @@ window.closeDetail = function() {
 };
 
 // Legg inn din delte nøkkel her så alle kan bruke AI-scanning:
-const SHARED_API_KEY = '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';
+const SHARED_API_KEY = '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';
 
 function getApiKey() {
   return localStorage.getItem('anthropic_key') || SHARED_API_KEY;
@@ -660,11 +660,11 @@ window.analyzeUrl = async function() {
   document.getElementById('preview-img').style.display = 'none';
   try {
     let html = '';
-    const fetchWithTimeout = (p, ms=8000) => Promise.race([p, new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]);
+    const fetchWithTimeout = (p, ms=10000) => Promise.race([p, new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]);
     const proxies = [
-      () => fetchWithTimeout(fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`).then(r=>r.ok?r.text():Promise.reject(new Error('not ok')))),
-      () => fetchWithTimeout(fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`).then(r=>r.json()).then(d=>{ if(!d.contents) throw new Error('empty'); return d.contents; })),
-      () => fetchWithTimeout(fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`).then(r=>r.ok?r.text():Promise.reject(new Error('not ok')))),
+      () => fetchWithTimeout(fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`).then(r=>r.ok?r.text():Promise.reject(new Error('codetabs fail')))),
+      () => fetchWithTimeout(fetch(`https://thingproxy.freeboard.io/fetch/${url}`).then(r=>r.ok?r.text():Promise.reject(new Error('thingproxy fail')))),
+      () => fetchWithTimeout(fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`).then(r=>r.ok?r.text():Promise.reject(new Error('allorigins fail')))),
     ];
     let lastError = '';
     for (const tryP of proxies) {
