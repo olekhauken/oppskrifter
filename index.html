@@ -297,7 +297,6 @@
 <div class="overlay" id="detail-overlay" onclick="closeDetail()"></div>
 <div class="sheet" id="detail-sheet">
   <button onclick="closeDetail()" style="position:fixed;top:16px;left:16px;z-index:210;background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:40px;height:40px;color:white;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);">‹</button>
-  <div id="detail-hero" class="detail-hero">🍽️</div>
   <div class="detail-content">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
       <div class="detail-title" id="d-title"></div>
@@ -539,9 +538,7 @@ window.openDetail = function(id) {
   const r = recipes.find(x=>x.id===id);
   if (!r) return;
   detailRecipe = r; currentDetailId = id; scaleMultiplier = 1;
-  const hero = document.getElementById('detail-hero');
-  if (r.image) hero.innerHTML = `<img src="${r.image}" alt="${r.name}">`;
-  else hero.textContent = catEmoji(r.category);
+
   document.getElementById('d-title').textContent = r.name;
   document.getElementById('d-cat').textContent = r.category||'';
   document.getElementById('d-time').textContent = r.time ? '⏱ '+r.time+' min' : '';
