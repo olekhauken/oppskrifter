@@ -679,7 +679,7 @@ window.analyzeUrl = async function() {
     const res = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-opus-4-5',max_tokens:2000,messages:[{role:'user',content:`Ekstraher oppskriften og returner KUN ren JSON:\n{"name":"","category":"Middag","portions":4,"time":30,"ingredients":[{"amount":"2","unit":"dl","name":"mel"}],"steps":["Steg 1..."],"notes":""}\nKategori: Frokost, Lunsj, Middag, Dessert, Bakst, Snacks, Drikke, Annet.\n\nTekst:\n${text}`}]})
+      body:JSON.stringify({model:'claude-opus-4-5',max_tokens:2000,messages:[{role:'user',content:`Ekstraher oppskriften fra denne teksten og returner KUN ren JSON (ingen markdown, ingen forklaring, ingen backticks):\n{"name":"","category":"Middag","portions":4,"time":30,"ingredients":[{"amount":"2","unit":"dl","name":"mel"}],"steps":["Steg 1..."],"notes":""}\nKategori: Frokost, Lunsj, Middag, Dessert, Bakst, Snacks, Drikke, Annet.\nHvis ingredienser ikke er listet opp, utled dem fra fremgangsmåten.\n\nTekst:\n${text}`}]})
     });
     const data = await res.json();
     const rt = data.content?.[0]?.text||'';
@@ -688,7 +688,11 @@ window.analyzeUrl = async function() {
       parsedAiRecipe = JSON.parse(m?m[0]:rt.trim());
       document.getElementById('ai-recipe-title').textContent = parsedAiRecipe.name;
       document.getElementById('ai-text').textContent = `${parsedAiRecipe.ingredients?.length||0} ingredienser · ${parsedAiRecipe.steps?.length||0} steg`;
-    } catch { parsedAiRecipe=null; document.getElementById('ai-recipe-title').textContent=''; document.getElementById('ai-text').textContent=rt; }
+    } catch(parseErr) {
+      parsedAiRecipe=null;
+      document.getElementById('ai-recipe-title').textContent='Kunne ikke tolke svar';
+      document.getElementById('ai-text').textContent='Råsvar fra AI:\n'+rt;
+    }
     document.getElementById('ai-result').style.display='block';
   } catch(e) { showToast('Noe gikk galt: '+e.message); }
   document.getElementById('ai-loading').style.display = 'none';
