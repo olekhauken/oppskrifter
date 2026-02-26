@@ -183,10 +183,17 @@
       </div>
     </div>
     <div style="text-align:center;color:var(--text2);font-size:13px;margin-bottom:16px;">— eller —</div>
-    <div class="camera-area" onclick="document.getElementById('file-input').click()">
-      <div class="cam-icon">📷</div>
-      <p>Trykk for å ta bilde eller velge fra bibliotek</p>
-      <input type="file" id="file-input" accept="image/*" capture="environment" onchange="handleImage(this)">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div class="camera-area" onclick="document.getElementById('file-camera').click()" style="margin-bottom:0;">
+        <div class="cam-icon">📷</div>
+        <p>Ta bilde</p>
+        <input type="file" id="file-camera" accept="image/*" capture="environment" onchange="handleImage(this)">
+      </div>
+      <div class="camera-area" onclick="document.getElementById('file-library').click()" style="margin-bottom:0;">
+        <div class="cam-icon">🖼️</div>
+        <p>Velg fra bibliotek</p>
+        <input type="file" id="file-library" accept="image/*" onchange="handleImage(this)">
+      </div>
     </div>
     <img id="preview-img" alt="Forhåndsvisning">
     <div class="loading" id="ai-loading"><div class="spinner"></div><p>Leser oppskrift...</p></div>
