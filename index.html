@@ -450,7 +450,7 @@ window.openAddSheet = function() {
   document.getElementById('f-cat').value = 'Middag';
   document.getElementById('ingredients-list').innerHTML = '';
   document.getElementById('steps-list').innerHTML = '';
-  addIngredientRow(); addStepRow(); showSheet();
+  addIngredientRow(); addStepRow(); showSheet(); enableIngredientDrag();
 };
 
 window.editCurrentRecipe = function() {
@@ -471,6 +471,7 @@ window.editCurrentRecipe = function() {
     else addIngredientRow(i);
   });
   if (!r.ingredients?.length) addIngredientRow();
+  enableIngredientDrag();
   document.getElementById('steps-list').innerHTML = '';
   (r.steps||[]).forEach(s => addStepRow(s));
   if (!r.steps?.length) addStepRow();
@@ -487,12 +488,36 @@ window.closeSheet = function() {
   document.getElementById('sheet').classList.remove('active');
 };
 
+// Drag and drop for ingredients
+function enableIngredientDrag() {
+  const list = document.getElementById('ingredients-list');
+  let dragging = null;
+  list.addEventListener('dragstart', e => {
+    dragging = e.target.closest('[draggable]');
+    setTimeout(() => dragging && dragging.classList.add('opacity-50'), 0);
+  });
+  list.addEventListener('dragend', () => {
+    dragging && dragging.classList.remove('opacity-50');
+    dragging = null;
+  });
+  list.addEventListener('dragover', e => {
+    e.preventDefault();
+    const target = e.target.closest('[draggable]');
+    if (target && target !== dragging) {
+      const rect = target.getBoundingClientRect();
+      const after = e.clientY > rect.top + rect.height / 2;
+      list.insertBefore(dragging, after ? target.nextSibling : target);
+    }
+  });
+}
+
 window.addIngredientRow = function(data={}) {
   const list = document.getElementById('ingredients-list');
   const row = document.createElement('div');
   row.className = 'ingredient-row';
+  row.draggable = true;
   const opts = UNITS.map(u => `<option value="${u}" ${u===(data.unit||'')?'selected':''}>${u||'—'}</option>`).join('');
-  row.innerHTML = `<input class="qty" type="text" placeholder="Mengde" value="${data.amount||''}" inputmode="decimal"><select>${opts}</select><input type="text" placeholder="Ingrediens" value="${data.name||''}"><button onclick="this.parentElement.remove()">×</button>`;
+  row.innerHTML = `<span style="cursor:grab;color:var(--text2);padding:0 4px;font-size:16px;">⠿</span><input class="qty" type="text" placeholder="Mengde" value="${data.amount||''}" inputmode="decimal"><select>${opts}</select><input type="text" placeholder="Ingrediens" value="${data.name||''}"><button onclick="this.parentElement.remove()">×</button>`;
   list.appendChild(row);
 };
 
@@ -500,7 +525,8 @@ window.addGroupHeader = function(text='') {
   const list = document.getElementById('ingredients-list');
   const row = document.createElement('div');
   row.className = 'ingredient-group-row';
-  row.innerHTML = `<input type="text" placeholder="Gruppenavn, f.eks. Bunn, Fyll..." value="${text}" style="padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--accent2);font-family:'DM Sans',sans-serif;font-size:14px;font-style:italic;outline:none;flex:1;"><button onclick="this.parentElement.remove()" style="width:36px;height:36px;border-radius:8px;border:none;background:var(--danger);color:white;font-size:18px;cursor:pointer;flex-shrink:0;">×</button>`;
+  row.draggable = true;
+  row.innerHTML = `<span style="cursor:grab;color:var(--text2);padding:0 4px;font-size:16px;">⠿</span><input type="text" placeholder="Gruppenavn, f.eks. Bunn, Fyll..." value="${text}" style="padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--accent2);font-family:'DM Sans',sans-serif;font-size:14px;font-style:italic;outline:none;flex:1;"><button onclick="this.parentElement.remove()" style="width:36px;height:36px;border-radius:8px;border:none;background:var(--danger);color:white;font-size:18px;cursor:pointer;flex-shrink:0;">×</button>`;
   list.appendChild(row);
 };
 
@@ -649,7 +675,7 @@ async function analyzeImage() {
       headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-opus-4-5',max_tokens:2000,messages:[{role:'user',content:[
         {type:'image',source:{type:'base64',media_type:'image/jpeg',data:currentImageBase64}},
-        {type:'text',text:`Les denne oppskriften og returner den som JSON (ingen markdown, kun ren JSON):\n{"name":"","category":"Middag","portions":4,"time":30,"ingredients":[{"amount":"2","unit":"dl","name":"mel"}],"steps":["Steg 1..."],"notes":""}\nBruk norske enheter. Kategori: Frokost, Lunsj, Middag, Dessert, Bakst, Snacks, Drikke, Annet.`}
+        {type:'text',text:`Les denne oppskriften og returner den som JSON (ingen markdown, kun ren JSON). Hvis ingredienslisten har deloverskrifter som "Bunn", "Fyll", "Topping" osv, legg dem inn som {"group":"Bunn"} objekter i ingredienslisten på riktig plass.\n{"name":"","category":"Middag","portions":4,"time":30,"ingredients":[{"group":"Bunn"},{"amount":"2","unit":"dl","name":"mel"},{"group":"Fyll"},{"amount":"1","unit":"dl","name":"smør"}],"steps":["Steg 1..."],"notes":""}\nHvis det ikke er deloverskrifter, utelat group-feltene helt. Bruk norske enheter. Kategori: Frokost, Lunsj, Middag, Dessert, Bakst, Snacks, Drikke, Annet.`}
       ]}]})
     });
     const data = await res.json();
@@ -696,7 +722,7 @@ window.analyzeUrl = async function() {
     const res = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-opus-4-5',max_tokens:2000,messages:[{role:'user',content:`Du er en ekspert på norske oppskrifter. Ekstraher eller rekonstruer oppskriften fra denne teksten og returner KUN ren JSON (ingen markdown, ingen forklaring, ingen backticks). Selv om ingredienslisten mangler, SKAL du alltid fylle inn ingredienser basert på oppskriftsnavnet og fremgangsmåten - gjett mengder hvis nødvendig.\n{"name":"","category":"Middag","portions":4,"time":30,"ingredients":[{"amount":"2","unit":"dl","name":"mel"}],"steps":["Steg 1..."],"notes":""}\nKategori: Frokost, Lunsj, Middag, Dessert, Bakst, Snacks, Drikke, Annet.\n\nTekst:\n${text}`}]})
+      body:JSON.stringify({model:'claude-opus-4-5',max_tokens:2000,messages:[{role:'user',content:`Du er en ekspert på norske oppskrifter. Ekstraher eller rekonstruer oppskriften fra denne teksten og returner KUN ren JSON (ingen markdown, ingen forklaring, ingen backticks). Selv om ingredienslisten mangler, SKAL du alltid fylle inn ingredienser. Hvis ingredienslisten har deloverskrifter som "Bunn", "Fyll", "Topping" osv, legg dem inn som {"group":"Bunn"} objekter i ingredienslisten på riktig plass. Hvis ikke deloverskrifter, utelat group-feltene.\n{"name":"","category":"Middag","portions":4,"time":30,"ingredients":[{"group":"Bunn"},{"amount":"2","unit":"dl","name":"mel"},{"group":"Fyll"},{"amount":"1","unit":"dl","name":"smør"}],"steps":["Steg 1..."],"notes":""}\nKategori: Frokost, Lunsj, Middag, Dessert, Bakst, Snacks, Drikke, Annet.\n\nTekst:\n${text}`}]})
     });
     const data = await res.json();
     const rt = data.content?.[0]?.text||'';
